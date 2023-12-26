@@ -196,7 +196,7 @@ async function run() {
  *           schema:
  *             type: object
  *             properties:
- *               email:
+ *               username:
  *                 type: string
  *               password:
  *                 type: string
