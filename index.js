@@ -352,6 +352,7 @@ async function run() {
     res.send(await read(client, data));
   });
 
+  
   /**
  * @swagger
  * /readSecurity:
@@ -368,13 +369,7 @@ async function run() {
  *         content:
  *           application/json:
  *             schema:
- *               // Define the schema for security personnel information response
- *               type: object
- *               properties:
- *                 // Include properties for security personnel information
- *                 username:
- *                   type: string
- *                 // Add more properties as needed
+ *               $ref: '#/components/schemas/SecurityInfo'
  *       '401':
  *         description: Unauthorized - Token is missing or invalid
  */
@@ -383,6 +378,7 @@ async function run() {
     res.send(await read(client, data));
   });
 
+  
   /**
  * @swagger
  * /readVisitor:
@@ -399,13 +395,7 @@ async function run() {
  *         content:
  *           application/json:
  *             schema:
- *               // Define the schema for visitor information response
- *               type: object
- *               properties:
- *                 // Include properties for visitor information
- *                 name:
- *                   type: string
- *                 // Add more properties as needed
+ *               $ref: '#/components/schemas/VisitorInfo'
  *       '401':
  *         description: Unauthorized - Token is missing or invalid
  */
@@ -414,6 +404,9 @@ async function run() {
     res.send(await read(client, data));
   });
 
+  
+
+ 
   /**
  * @swagger
  * /updateVisitor:
@@ -431,10 +424,29 @@ async function run() {
  *           schema:
  *             type: object
  *             properties:
- *               // Add properties for updating visitor information
+ *               password:
+ *                 type: string
  *               name:
  *                 type: string
- *               // Add more properties as needed
+ *               icNumber:
+ *                 type: string
+ *               company:
+ *                 type: string
+ *               vehicleNumber:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               phoneNumber:
+ *                 type: string
+ *             required:
+ *               - password
+ *               - name
+ *               - icNumber
+ *               - company
+ *               - vehicleNumber
+ *               - email
+ *               - phoneNumber
  *     responses:
  *       '200':
  *         description: Visitor information updated successfully
@@ -478,12 +490,13 @@ async function run() {
     res.send(await deleteUser(client, data));
   });
 
+  
   /**
  * @swagger
  * /checkIn:
  *   post:
- *     summary: Visitor check-in
- *     description: Check-in a visitor
+ *     summary: Check-in for a visitor
+ *     description: Perform check-in for a visitor with record ID and purpose
  *     tags:
  *       - Visitor
  *     security:
@@ -495,16 +508,16 @@ async function run() {
  *           schema:
  *             type: object
  *             properties:
- *               // Add properties for visitor check-in
- *               visitorId:
+ *               recordId:
  *                 type: string
- *               checkInTime:
+ *               purpose:
  *                 type: string
- *                 format: date-time
- *               // Add more properties as needed
+ *             required:
+ *               - recordId
+ *               - purpose
  *     responses:
  *       '200':
- *         description: Visitor check-in successful
+ *         description: Check-in successful
  *         content:
  *           text/plain:
  *             schema:
