@@ -57,12 +57,13 @@ async function run() {
     res.send('Welcome to the Security Management System');
   });
 
+  
   /**
  * @swagger
  * /registerAdmin:
  *   post:
- *     summary: Register admin
- *     description: Register a new admin user
+ *     summary: Register a new admin
+ *     description: Register a new admin user with required details
  *     tags:
  *       - Admin
  *     requestBody:
@@ -74,10 +75,25 @@ async function run() {
  *             properties:
  *               username:
  *                 type: string
- *               email:
- *                 type: string
  *               password:
  *                 type: string
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               phoneNumber:
+ *                 type: string
+ *               role:
+ *                 type: string
+ *                 enum: [Admin]
+ *             required:
+ *               - username
+ *               - password
+ *               - name
+ *               - email
+ *               - phoneNumber
+ *               - role
  *     responses:
  *       '200':
  *         description: Admin registration successful
