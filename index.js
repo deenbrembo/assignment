@@ -537,7 +537,7 @@ async function run() {
   /**
  * @swagger
  * /checkOut:
- *   patch:
+ *   post:
  *     summary: Check-out for a visitor
  *     description: Perform check-out for a visitor using the token
  *     tags:
