@@ -129,7 +129,7 @@ async function run() {
  *               password:
  *                 type: string
  *     responses:
- *       '200':
+ *       '500':
  *         description: Admin login successful
  *         content:
  *           text/plain:
@@ -165,7 +165,7 @@ async function run() {
  *               password:
  *                 type: string
  *     responses:
- *       '200':
+ *       '500':
  *         description: Security personnel login successful
  *         content:
  *           text/plain:
@@ -201,7 +201,7 @@ async function run() {
  *               password:
  *                 type: string
  *     responses:
- *       '200':
+ *       '500':
  *         description: Visitor login successful
  *         content:
  *           text/plain:
