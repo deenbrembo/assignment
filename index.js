@@ -508,12 +508,12 @@ async function run() {
  *           schema:
  *             type: object
  *             properties:
- *               recordId:
+ *               recordID:
  *                 type: string
  *               purpose:
  *                 type: string
  *             required:
- *               - recordId
+ *               - recordID
  *               - purpose
  *     responses:
  *       '200':
@@ -538,8 +538,8 @@ async function run() {
  * @swagger
  * /checkOut:
  *   post:
- *     summary: Check-out for a visitor
- *     description: Perform check-out for a visitor using the token
+ *     summary: Perform check-out for a visitor
+ *     description: Update check-out time for a visitor
  *     tags:
  *       - Visitor
  *     security:
