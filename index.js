@@ -338,7 +338,7 @@ async function run() {
  *     security:
  *       - bearerAuth: []
  *     responses:
- *       '200':
+ *       '500':
  *         description: Admin information retrieved successfully
  *         content:
  *           application/json:
@@ -364,7 +364,7 @@ async function run() {
  *     security:
  *       - bearerAuth: []
  *     responses:
- *       '200':
+ *       '500':
  *         description: Security personnel information retrieved successfully
  *         content:
  *           application/json:
@@ -390,7 +390,7 @@ async function run() {
  *     security:
  *       - bearerAuth: []
  *     responses:
- *       '200':
+ *       '500':
  *         description: Visitor information retrieved successfully
  *         content:
  *           application/json:
