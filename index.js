@@ -5,6 +5,31 @@ const bcrypt = require('bcrypt');
 
 const app = express();
 const port = process.env.PORT || 3000;
+const swaggerUi = require('swagger-ui-express');
+const swaggerJsdoc = require('swagger-jsdoc');
+
+const options = {
+    definition: {
+        openapi: '3.0.0',
+        info: {
+            title: 'VMS API',
+            version: '1.0.0'
+        },
+        components: {  // Add 'components' section
+            securitySchemes: {  // Define 'securitySchemes'
+                bearerAuth: {  // Define 'bearerAuth'
+                    type: 'http',
+                    scheme: 'bearer',
+                    bearerFormat: 'JWT'
+                }
+            }
+        }
+    },
+    apis: ['./index.js'],
+};
+
+const swaggerSpec = swaggerJsdoc(options);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 const saltRounds = 10;
 const uri = "mongodb+srv://deenbrembo:hafizudin202@cluster0.vlncwtu.mongodb.net/";
 
@@ -32,70 +57,449 @@ async function run() {
     res.send('Welcome to the Security Management System');
   });
 
+  /**
+ * @swagger
+ * /registerAdmin:
+ *   post:
+ *     summary: Register admin
+ *     description: Register a new admin user
+ *     tags:
+ *       - Admin
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       '200':
+ *         description: Admin registration successful
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *       '400':
+ *         description: Invalid request body
+ */
   app.post('/registerAdmin', async (req, res) => {
     let data = req.body;
     res.send(await registerAdmin(client, data));
   });
 
+  /**
+ * @swagger
+ * /loginAdmin:
+ *   post:
+ *     summary: Authenticate admin
+ *     description: Login with admin credentials
+ *     tags:
+ *       - Admin
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       '200':
+ *         description: Admin login successful
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *       '400':
+ *         description: Invalid request body
+ *       '401':
+ *         description: Unauthorized - Invalid credentials
+ */
   app.post('/loginAdmin', async (req, res) => {
     let data = req.body;
     res.send(await login(client, data));
   });
 
+  /**
+ * @swagger
+ * /loginSecurity:
+ *   post:
+ *     summary: Authenticate security personnel
+ *     description: Login with security personnel credentials
+ *     tags:
+ *       - Security
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       '200':
+ *         description: Security personnel login successful
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *       '400':
+ *         description: Invalid request body
+ *       '401':
+ *         description: Unauthorized - Invalid credentials
+ */
   app.post('/loginSecurity', async (req, res) => {
     let data = req.body;
     res.send(await login(client, data));
   });
 
+  /**
+ * @swagger
+ * /loginVisitor:
+ *   post:
+ *     summary: Authenticate visitor
+ *     description: Login for visitors
+ *     tags:
+ *       - Visitor
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       '200':
+ *         description: Visitor login successful
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *       '400':
+ *         description: Invalid request body
+ *       '401':
+ *         description: Unauthorized - Invalid credentials
+ */
   app.post('/loginVisitor', async (req, res) => {
     let data = req.body;
     res.send(await login(client, data));
   });
 
+  /**
+ * @swagger
+ * /registerSecurity:
+ *   post:
+ *     summary: Register security personnel
+ *     description: Register a new security personnel
+ *     tags:
+ *       - Security
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               // Add properties for security personnel registration
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               // Add more properties as required
+ *     responses:
+ *       '200':
+ *         description: Security personnel registration successful
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *       '401':
+ *         description: Unauthorized - Token is missing or invalid
+ */
   app.post('/registerSecurity', verifyToken, async (req, res) => {
     let data = req.user;
     let mydata = req.body;
     res.send(await register(client, data, mydata));
   });
 
+  /**
+ * @swagger
+ * /registerVisitor:
+ *   post:
+ *     summary: Register visitor
+ *     description: Register a new visitor
+ *     tags:
+ *       - Visitor
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               // Add properties for visitor registration
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               // Add more properties as required
+ *     responses:
+ *       '200':
+ *         description: Visitor registration successful
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *       '401':
+ *         description: Unauthorized - Token is missing or invalid
+ */
   app.post('/registerVisitor', verifyToken, async (req, res) => {
     let data = req.user;
     let mydata = req.body;
     res.send(await register(client, data, mydata));
   });
 
+  /**
+ * @swagger
+ * /readAdmin:
+ *   get:
+ *     summary: Read admin information
+ *     description: Retrieve information for an admin user
+ *     tags:
+ *       - Admin
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: Admin information retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               // Define the schema for the admin information response
+ *               type: object
+ *               properties:
+ *                 // Include properties for admin information
+ *                 username:
+ *                   type: string
+ *                 // Add more properties as needed
+ *       '401':
+ *         description: Unauthorized - Token is missing or invalid
+ */
   app.get('/readAdmin', verifyToken, async (req, res) => {
     let data = req.user;
     res.send(await read(client, data));
   });
 
+  /**
+ * @swagger
+ * /readSecurity:
+ *   get:
+ *     summary: Read security personnel information
+ *     description: Retrieve information for security personnel
+ *     tags:
+ *       - Security
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: Security personnel information retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               // Define the schema for security personnel information response
+ *               type: object
+ *               properties:
+ *                 // Include properties for security personnel information
+ *                 username:
+ *                   type: string
+ *                 // Add more properties as needed
+ *       '401':
+ *         description: Unauthorized - Token is missing or invalid
+ */
   app.get('/readSecurity', verifyToken, async (req, res) => {
     let data = req.user;
     res.send(await read(client, data));
   });
 
+  /**
+ * @swagger
+ * /readVisitor:
+ *   get:
+ *     summary: Read visitor information
+ *     description: Retrieve information for a visitor
+ *     tags:
+ *       - Visitor
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: Visitor information retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               // Define the schema for visitor information response
+ *               type: object
+ *               properties:
+ *                 // Include properties for visitor information
+ *                 name:
+ *                   type: string
+ *                 // Add more properties as needed
+ *       '401':
+ *         description: Unauthorized - Token is missing or invalid
+ */
   app.get('/readVisitor', verifyToken, async (req, res) => {
     let data = req.user;
     res.send(await read(client, data));
   });
 
+  /**
+ * @swagger
+ * /updateVisitor:
+ *   patch:
+ *     summary: Update visitor information
+ *     description: Update information for a visitor
+ *     tags:
+ *       - Visitor
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               // Add properties for updating visitor information
+ *               name:
+ *                 type: string
+ *               // Add more properties as needed
+ *     responses:
+ *       '200':
+ *         description: Visitor information updated successfully
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *       '400':
+ *         description: Invalid request body
+ *       '401':
+ *         description: Unauthorized - Token is missing or invalid
+ */
   app.patch('/updateVisitor', verifyToken, async (req, res) => {
     let data = req.user;
     let mydata = req.body;
     res.send(await update(client, data, mydata));
   });
 
+  /**
+ * @swagger
+ * /deleteVisitor:
+ *   delete:
+ *     summary: Delete visitor account
+ *     description: Delete a visitor's account
+ *     tags:
+ *       - Visitor
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: Visitor account deleted successfully
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *       '401':
+ *         description: Unauthorized - Token is missing or invalid
+ */
   app.delete('/deleteVisitor', verifyToken, async (req, res) => {
     let data = req.user;
     res.send(await deleteUser(client, data));
   });
 
+  /**
+ * @swagger
+ * /checkIn:
+ *   post:
+ *     summary: Visitor check-in
+ *     description: Check-in a visitor
+ *     tags:
+ *       - Visitor
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               // Add properties for visitor check-in
+ *               visitorId:
+ *                 type: string
+ *               checkInTime:
+ *                 type: string
+ *                 format: date-time
+ *               // Add more properties as needed
+ *     responses:
+ *       '200':
+ *         description: Visitor check-in successful
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *       '400':
+ *         description: Invalid request body
+ *       '401':
+ *         description: Unauthorized - Token is missing or invalid
+ */
   app.post('/checkIn', verifyToken, async (req, res) => {
     let data = req.user;
     let mydata = req.body;
     res.send(await checkIn(client, data, mydata));
   });
 
+  /**
+ * @swagger
+ * /checkOut:
+ *   patch:
+ *     summary: Visitor check-out
+ *     description: Check-out a visitor
+ *     tags:
+ *       - Visitor
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: Visitor check-out successful
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *       '401':
+ *         description: Unauthorized - Token is missing or invalid
+ */
   app.patch('/checkOut', verifyToken, async (req, res) => {
     let data = req.user;
     res.send(await checkOut(client, data));
