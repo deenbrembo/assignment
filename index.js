@@ -554,7 +554,7 @@ async function run() {
  *       '401':
  *         description: Unauthorized - Token is missing or invalid
  */
-  app.patch('/checkOut', verifyToken, async (req, res) => {
+  app.post('/checkOut', verifyToken, async (req, res) => {
     let data = req.user;
     res.send(await checkOut(client, data));
   });
