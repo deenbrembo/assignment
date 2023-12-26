@@ -491,6 +491,7 @@ async function run() {
   });
 
   
+  
   /**
  * @swagger
  * /checkIn:
@@ -509,7 +510,9 @@ async function run() {
  *             type: object
  *             properties:
  *               recordID:
- *                 type: string
+ *                 oneOf:
+ *                   - type: string
+ *                   - type: integer
  *               purpose:
  *                 type: string
  *             required:
@@ -522,7 +525,7 @@ async function run() {
  *           text/plain:
  *             schema:
  *               type: string
- *       '400':
+*       '400':
  *         description: Invalid request body
  *       '401':
  *         description: Unauthorized - Token is missing or invalid
