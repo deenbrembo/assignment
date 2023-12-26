@@ -533,19 +533,20 @@ async function run() {
     res.send(await checkIn(client, data, mydata));
   });
 
+  
   /**
  * @swagger
  * /checkOut:
  *   patch:
- *     summary: Visitor check-out
- *     description: Check-out a visitor
+ *     summary: Check-out for a visitor
+ *     description: Perform check-out for a visitor using the token
  *     tags:
  *       - Visitor
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       '200':
- *         description: Visitor check-out successful
+ *         description: Check-out successful
  *         content:
  *           text/plain:
  *             schema:
