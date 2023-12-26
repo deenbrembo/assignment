@@ -221,8 +221,8 @@ async function run() {
  * @swagger
  * /registerSecurity:
  *   post:
- *     summary: Register security personnel
- *     description: Register a new security personnel
+ *     summary: Register a new security personnel
+ *     description: Register a new security personnel with required details
  *     tags:
  *       - Security
  *     security:
@@ -234,12 +234,23 @@ async function run() {
  *           schema:
  *             type: object
  *             properties:
- *               // Add properties for security personnel registration
  *               username:
  *                 type: string
  *               password:
  *                 type: string
- *               // Add more properties as required
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               phoneNumber:
+ *                 type: string
+ *             required:
+ *               - username
+ *               - password
+ *               - name
+ *               - email
+ *               - phoneNumber
  *     responses:
  *       '200':
  *         description: Security personnel registration successful
@@ -256,12 +267,13 @@ async function run() {
     res.send(await register(client, data, mydata));
   });
 
+  
   /**
  * @swagger
  * /registerVisitor:
  *   post:
- *     summary: Register visitor
- *     description: Register a new visitor
+ *     summary: Register a new visitor
+ *     description: Register a new visitor with required details
  *     tags:
  *       - Visitor
  *     security:
@@ -273,14 +285,32 @@ async function run() {
  *           schema:
  *             type: object
  *             properties:
- *               // Add properties for visitor registration
- *               name:
- *                 type: string
- *               email:
+ *               username:
  *                 type: string
  *               password:
  *                 type: string
- *               // Add more properties as required
+ *               name:
+ *                 type: string
+ *               icNumber:
+ *                 type: string
+ *               company:
+ *                 type: string
+ *               vehicleNumber:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               phoneNumber:
+ *                 type: string
+ *             required:
+ *               - username
+ *               - password
+ *               - name
+ *               - icNumber
+ *               - company
+ *               - vehicleNumber
+ *               - email
+ *               - phoneNumber
  *     responses:
  *       '200':
  *         description: Visitor registration successful
