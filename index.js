@@ -297,13 +297,7 @@ async function run() {
  *         content:
  *           application/json:
  *             schema:
- *               // Define the schema for the admin information response
- *               type: object
- *               properties:
- *                 // Include properties for admin information
- *                 username:
- *                   type: string
- *                 // Add more properties as needed
+ *               $ref: '#/components/schemas/AdminInfo'
  *       '401':
  *         description: Unauthorized - Token is missing or invalid
  */
