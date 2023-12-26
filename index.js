@@ -610,11 +610,21 @@ async function login(client, data) {
     // Compare the provided password with the stored password
     const isPasswordMatch = await decryptPassword(data.password, match.password);
 
+
     if (isPasswordMatch) {
       console.clear(); // Clear the console
       const token = generateToken(match);
-      console.log(output(match.role));
-      return "\nToken for " + match.name + ": " + token;
+
+      switch (match.role) {
+        case "Admin":
+          return "You are logged in as Admin\n1) Register Security\n2) Read all data\n\nToken for " + match.name + ": " + token + "\n";
+        case "Security":
+          return "You are logged in as Security\n1) register Visitor\n2) read security and visitor data\n\nToken for " + match.name + ": " + token + "\n";
+        case "Visitor":
+          return "You are logged in as a regular visitor User\n1) check in\n2) check out\n3) read visitor data\n4) update profile\n5) delete account\n\nToken for " + match.name + ": " + token + "\n";
+        default:
+          return "Role not defined";
+      }
     }
      else {
       return "Wrong password";
