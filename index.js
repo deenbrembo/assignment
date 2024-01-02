@@ -638,9 +638,9 @@ async function login(client, data) {
         case "Admin":
           return "You are logged in as Admin\n1) Register Security\n2) Read all data\n\nToken for " + match.name + ": " + token + "\n";
         case "Security":
-          return "You are logged in as Security\n1) register Visitor\n2) read security and visitor data\n\nToken for " + match.name + ": " + token + "\n";
+          return "You are logged in as Security\n1) register Visitor\n2) read security and visitor data\n3) Check in the visitor\n4) Check Out the visitor\n\nToken for " + match.name + ": " + token + "\n";
         case "Visitor":
-          return "You are logged in as a regular visitor User\n1) check in\n2) check out\n3) read visitor data\n4) update profile\n5) delete account\n\nToken for " + match.name + ": " + token + "\n";
+          return "You are logged in as a regular visitor User\n1) read visitor data\n4) update profile\n5) delete account\n\nToken for " + match.name + ": " + token + "\n";
         default:
           return "Role not defined";
       }
@@ -858,16 +858,27 @@ async function checkIn(client, data, mydata) {
     { $push: { records: mydata.recordID }, $set: { currentCheckIn: mydata.recordID } }
   );
 
-  return `Visitor '${mydata.username}' has checked in at '${currentCheckInTime}' with recordID '${mydata.recordID}'`;
+  return `Visitor '${mydata.name}' has checked in at '${currentCheckInTime}' with recordID '${mydata.recordID}'`;
 }
 
 
 
 //Function to check out
 async function checkOut(client, data, mydata) {
-  const securityCollection = client.db('assignment').collection('Security');
-  const usersCollection = client.db('assignment').collection('Users');
-  const recordsCollection = client.db('assignment').collection('Records');
+  const securityCollection = client.db('assigment').collection('Security');
+  const usersCollection = client.db('assigment').collection('Users');
+  const recordsCollection = client.db('assigment').collection('Records');
+
+  // Check if the user has Security role
+  if (data.role !== 'Security') {
+    return 'Access denied. Only security personnel can perform check-out.';
+  }
+
+  const visitor = await usersCollection.findOne({ username: mydata.username });
+
+  if (!visitor) {
+    return 'Visitor not found';
+  }
 
   const securityUser = await securityCollection.findOne({ username: data.username });
 
@@ -875,34 +886,23 @@ async function checkOut(client, data, mydata) {
     return 'Security user not found';
   }
 
-  const currentUser = await usersCollection.findOne({ username: mydata.username });
+  const record = await recordsCollection.findOne({
+    recordID: mydata.recordID,
+    username: mydata.username,
+  });
 
-  if (!currentUser) {
-    return 'User not found';
+  if (!record) {
+    return `Record with ID '${mydata.recordID}' for visitor '${mydata.username}' not found`;
   }
 
-  if (currentUser.username !== mydata.username) {
-    return 'Access denied. You are not authorized to check out this visitor.';
-  }
-
-  const checkOutRecord = await recordsCollection.findOne({ recordID: mydata.recordID });
-
-  if (!checkOutRecord) {
-    return `RecordID '${mydata.recordID}' not found`;
-  }
-
-  if (checkOutRecord.username !== mydata.username) {
-    return 'Invalid recordID for this user';
-  }
-
-  if (checkOutRecord.checkOutTime) {
-    return 'Visitor has already checked out';
+  if (record.checkOutTime) {
+    return `Visitor '${mydata.name}' with record ID '${mydata.recordID}' has already checked out`;
   }
 
   const checkOutTime = new Date();
 
   const updateResult = await recordsCollection.updateOne(
-    { recordID: mydata.recordID },
+    { recordID: mydata.recordID, username: mydata.username },
     { $set: { checkOutTime: checkOutTime } }
   );
 
@@ -910,16 +910,7 @@ async function checkOut(client, data, mydata) {
     return 'Failed to update check-out time. Please try again.';
   }
 
-  const unsetResult = await usersCollection.updateOne(
-    { username: mydata.username },
-    { $unset: { currentCheckIn: 1 } }
-  );
-
-  if (unsetResult.modifiedCount === 0) {
-    return 'Failed to check out. Please try again.';
-  }
-
-  return `Visitor '${mydata.username}' has checked out at '${checkOutTime}' with recordID '${mydata.recordID}'`;
+  return `Visitor '${mydata.username}' with record ID '${mydata.recordID}' has checked out at '${checkOutTime}'`;
 }
 
 
