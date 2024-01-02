@@ -548,7 +548,7 @@ async function run() {
  *     summary: Check-out for a visitor
  *     description: Perform check-out for a visitor using security token
  *     tags:
- *       - Visitor
+ *       - Security
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -865,7 +865,6 @@ async function checkOut(client, data) {
     return 'Access denied. Only security personnel can perform check-out.';
   }
 
-  
 
   // Find the visitor
   const existingRecord = await recordsCollection.findOne({ recordID: data.recordID });
@@ -888,15 +887,6 @@ async function checkOut(client, data) {
 
   if (updateResult.modifiedCount === 0) {
     return 'Failed to update check-out time. Please try again.';
-  }
-
-  const unsetResult = await usersCollection.updateOne(
-    { username: existingRecord.username },
-    { $unset: { currentCheckIn: '1' } }
-  );
-
-  if (unsetResult.modifiedCount === 0) {
-    return 'Failed to check out. Please try again.';
   }
 
   return `Visitor with record ID '${data.recordID}' has checked out at '${checkOutTime}'`;
