@@ -819,7 +819,6 @@ async function deleteUser(client, data) {
 
 //Function to check in
 async function checkIn(client, data, mydata) {
-  const securityCollection = client.db('assigment').collection('Security');
   const recordsCollection = client.db('assigment').collection('Records');
   const usersCollection = client.db('assigment').collection('Users');
 
@@ -847,12 +846,6 @@ async function checkIn(client, data, mydata) {
     checkInTime: currentCheckInTime
   };
 
-  const securityUser = await securityCollection.findOne({ username: data.username });
-
-  if (!securityUser) {
-    return 'Security user not found';
-  }
-
   await recordsCollection.insertOne(recordData);
 
   await usersCollection.updateOne(
@@ -866,36 +859,42 @@ async function checkIn(client, data, mydata) {
 
 
 //Function to check out
-async function checkOut(client, data, mydata) {
+async function checkOut(client, data) {
   const securityCollection = client.db('assignment').collection('Security');
   const recordsCollection = client.db('assignment').collection('Records');
   const usersCollection = client.db('assignment').collection('Users');
 
+  // Validation for security personnel
   if (data.role !== 'Security') {
     return 'Access denied. Only security personnel can perform check-out.';
   }
 
-  const visitor = await usersCollection.findOne({ username: mydata.username });
+  const visitor = await usersCollection.findOne({ username: data.username });
 
   if (!visitor) {
-    return 'Visitor not found';
+    return 'User not found';
   }
 
-  const existingRecord = await recordsCollection.findOne({ recordID: mydata.recordID });
+  if (!visitor.currentCheckIn) {
+    return 'You have not checked in yet, please check in first!!!';
+  }
 
-  if (!existingRecord || existingRecord.username !== mydata.username) {
-    return `No valid record found for the visitor '${mydata.username}' with recordID '${mydata.recordID}'.`;
+  // Find the visitor
+  const existingRecord = await recordsCollection.findOne({ recordID: data.recordID });
+
+  if (!existingRecord) {
+    return `No valid record found for the record ID '${data.recordID}'.`;
   }
 
   if (existingRecord.checkOutTime) {
-    return `Visitor '${mydata.username}' with record ID '${mydata.recordID}' has already checked out`;
+    return `Visitor with record ID '${data.recordID}' has already checked out`;
   }
 
+  // Update check-out time
   const checkOutTime = new Date();
 
   const updateResult = await recordsCollection.updateOne(
-    { username: mydata.username},
-    { recordID: mydata.recordID },
+    { recordID: data.recordID },
     { $set: { checkOutTime: checkOutTime } }
   );
 
@@ -903,12 +902,16 @@ async function checkOut(client, data, mydata) {
     return 'Failed to update check-out time. Please try again.';
   }
 
-  await usersCollection.updateOne(
-    { username: mydata.username },
+  const unsetResult = await usersCollection.updateOne(
+    { username: visitor.username },
     { $unset: { currentCheckIn: 1 } }
   );
 
-  return `Visitor '${mydata.username}' with record ID '${mydata.recordID}' has checked out at '${checkOutTime}'`;
+  if (unsetResult.modifiedCount === 0) {
+    return 'Failed to check out. Please try again.';
+  }
+
+  return `Visitor with record ID '${data.recordID}' has checked out at '${checkOutTime}'`;
 }
 
 
