@@ -544,12 +544,12 @@ async function run() {
  * @swagger
  * /checkOut:
  *   post:
- *     summary: Perform check-out for a visitor
- *     description: Update check-out time for a visitor
+ *     summary: Check-out for a visitor
+ *     description: Perform check-out for a visitor using their username and record ID
  *     tags:
  *       - Security
  *     security:
- *       - bearerAuth: []
+ *       - bearerAuth: [] # Security definition - Bearer Token
  *     requestBody:
  *       required: true
  *       content:
@@ -560,9 +560,7 @@ async function run() {
  *               username:
  *                 type: string
  *               recordID:
- *                 oneOf:
- *                   - type: string
- *                   - type: integer
+ *                 type: string
  *             required:
  *               - username
  *               - recordID
@@ -573,9 +571,12 @@ async function run() {
  *           text/plain:
  *             schema:
  *               type: string
+ *       '400':
+ *         description: Invalid request body
  *       '401':
  *         description: Unauthorized - Token is missing or invalid
  */
+
   app.post('/checkOut', verifyToken, async (req, res) => {
     let data = req.user;
     res.send(await checkOut(client, data));
@@ -858,7 +859,7 @@ async function checkIn(client, data, mydata) {
     { $push: { records: mydata.recordID }, $set: { currentCheckIn: mydata.recordID } }
   );
 
-  return `Visitor '${mydata.name}' has checked in at '${currentCheckInTime}' with recordID '${mydata.recordID}'`;
+  return `Visitor '${mydata.username}' has checked in at '${currentCheckInTime}' with recordID '${mydata.recordID}'`;
 }
 
 
@@ -896,7 +897,7 @@ async function checkOut(client, data, mydata) {
   }
 
   if (record.checkOutTime) {
-    return `Visitor '${mydata.name}' with record ID '${mydata.recordID}' has already checked out`;
+    return `Visitor '${mydata.username}' with record ID '${mydata.recordID}' has already checked out`;
   }
 
   const checkOutTime = new Date();
