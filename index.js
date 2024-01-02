@@ -867,9 +867,9 @@ async function checkIn(client, data, mydata) {
 
 //Function to check out
 async function checkOut(client, data, mydata) {
-  const securityCollection = client.db('assigment').collection('Security');
-  const recordsCollection = client.db('assigment').collection('Records');
-  const usersCollection = client.db('assigment').collection('Users');
+  const securityCollection = client.db('assignment').collection('Security');
+  const recordsCollection = client.db('assignment').collection('Records');
+  const usersCollection = client.db('assignment').collection('Users');
 
   if (data.role !== 'Security') {
     return 'Access denied. Only security personnel can perform check-out.';
@@ -881,29 +881,31 @@ async function checkOut(client, data, mydata) {
     return 'Visitor not found';
   }
 
-  const record = await recordsCollection.findOne({
-    recordID: mydata.recordID,
-    username: mydata.username,
-  });
+  const existingRecord = await recordsCollection.findOne({ recordID: mydata.recordID });
 
-  if (!record) {
-    return `Record with ID '${mydata.recordID}' for visitor '${mydata.username}' not found`;
+  if (!existingRecord || existingRecord.username !== mydata.username) {
+    return `No valid record found for the visitor '${mydata.username}' with recordID '${mydata.recordID}'.`;
   }
 
-  if (record.checkOutTime) {
+  if (existingRecord.checkOutTime) {
     return `Visitor '${mydata.username}' with record ID '${mydata.recordID}' has already checked out`;
   }
 
   const checkOutTime = new Date();
 
   const updateResult = await recordsCollection.updateOne(
-    { recordID: mydata.recordID, username: mydata.username },
+    { recordID: mydata.recordID },
     { $set: { checkOutTime: checkOutTime } }
   );
 
   if (updateResult.modifiedCount === 0) {
     return 'Failed to update check-out time. Please try again.';
   }
+
+  await usersCollection.updateOne(
+    { username: mydata.username },
+    { $unset: { currentCheckIn: 1 } }
+  );
 
   return `Visitor '${mydata.username}' with record ID '${mydata.recordID}' has checked out at '${checkOutTime}'`;
 }
