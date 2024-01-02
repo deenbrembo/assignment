@@ -894,6 +894,7 @@ async function checkOut(client, data, mydata) {
   const checkOutTime = new Date();
 
   const updateResult = await recordsCollection.updateOne(
+    { username: mydata.username},
     { recordID: mydata.recordID },
     { $set: { checkOutTime: checkOutTime } }
   );
