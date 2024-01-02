@@ -499,7 +499,7 @@ async function run() {
  *     summary: Check-in for a visitor
  *     description: Perform check-in for a visitor with record ID and purpose
  *     tags:
- *       - Security
+ *       - Visitor
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -547,7 +547,7 @@ async function run() {
  *   summary: Check-out for a visitor
  *     description: Perform check-out for a visitor using their username and record ID
  *     tags:
- *       - Security
+ *       - Visitor
  *     security:
  *       - bearerAuth: [] # Security definition - Bearer Token
  *     requestBody:
@@ -576,7 +576,6 @@ async function run() {
  *       '401':
  *         description: Unauthorized - Token is missing or invalid
  */
-
   app.post('/checkOut', verifyToken, async (req, res) => {
     let data = req.user;
     res.send(await checkOut(client, data));
