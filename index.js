@@ -492,14 +492,14 @@ async function run() {
 
   
   
-/**
+  /**
  * @swagger
  * /checkIn:
  *   post:
  *     summary: Check-in for a visitor
  *     description: Perform check-in for a visitor with record ID and purpose
  *     tags:
- *       - Security
+ *       - Visitor
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -509,8 +509,6 @@ async function run() {
  *           schema:
  *             type: object
  *             properties:
- *               username:
- *                 type: string
  *               recordID:
  *                 oneOf:
  *                   - type: string
@@ -518,7 +516,6 @@ async function run() {
  *               purpose:
  *                 type: string
  *             required:
- *               - username
  *               - recordID
  *               - purpose
  *     responses:
@@ -528,7 +525,7 @@ async function run() {
  *           text/plain:
  *             schema:
  *               type: string
- *       '400':
+*       '400':
  *         description: Invalid request body
  *       '401':
  *         description: Unauthorized - Token is missing or invalid
@@ -540,32 +537,16 @@ async function run() {
   });
 
   
-/**
+  /**
  * @swagger
  * /checkOut:
  *   post:
  *     summary: Perform check-out for a visitor
  *     description: Update check-out time for a visitor
  *     tags:
- *       - Security
+ *       - Visitor
  *     security:
  *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               username:
- *                 type: string
- *               recordID:
- *                 oneOf:
- *                   - type: string
- *                   - type: integer
- *             required:
- *               - username
- *               - recordID
  *     responses:
  *       '200':
  *         description: Check-out successful
@@ -573,8 +554,6 @@ async function run() {
  *           text/plain:
  *             schema:
  *               type: string
- *       '400':
- *         description: Invalid request body
  *       '401':
  *         description: Unauthorized - Token is missing or invalid
  */
@@ -817,19 +796,23 @@ async function deleteUser(client, data) {
 
 
 
+//Function to check in
 async function checkIn(client, data, mydata) {
-  const securityCollection = client.db('assigment').collection('Security');
-  const recordsCollection = client.db('assigment').collection('Records');
   const usersCollection = client.db('assigment').collection('Users');
+  const recordsCollection = client.db('assigment').collection('Records');
 
-  if (data.role !== 'Security') {
-    return 'Access denied. Only security personnel can perform check-in.';
+  const currentUser = await usersCollection.findOne({ username: data.username });
+
+  if (!currentUser) {
+    return 'User not found';
   }
 
-  const visitor = await usersCollection.findOne({ username: mydata.username });
+  if (currentUser.currentCheckIn) {
+    return 'Already checked in, please check out first!!!';
+  }
 
-  if (!visitor) {
-    return 'Visitor not found';
+  if (data.role !== 'Visitor') {
+    return 'Only visitors can access check-in.';
   }
 
   const existingRecord = await recordsCollection.findOne({ recordID: mydata.recordID });
@@ -839,71 +822,48 @@ async function checkIn(client, data, mydata) {
   }
 
   const currentCheckInTime = new Date();
+
   const recordData = {
-    username: mydata.username,
+    username: data.username,
     recordID: mydata.recordID,
     purpose: mydata.purpose,
     checkInTime: currentCheckInTime
   };
 
-  const securityUser = await securityCollection.findOne({ username: data.username });
-
-  if (!securityUser) {
-    return 'Security user not found';
-  }
-
   await recordsCollection.insertOne(recordData);
 
   await usersCollection.updateOne(
-    { username: mydata.username },
-    { $push: { records: mydata.recordID }, $set: { currentCheckIn: mydata.recordID } }
+    { username: data.username },
+    {
+      $set: { currentCheckIn: mydata.recordID },
+      $push: { records: mydata.recordID }
+    }
   );
 
-  return `Visitor '${mydata.username}' has checked in at '${currentCheckInTime}' with recordID '${mydata.recordID}'`;
+  return `You have checked in at '${currentCheckInTime}' with recordID '${mydata.recordID}'`;
 }
 
 
 
 //Function to check out
-async function checkOut(client, data, mydata) {
-  const securityCollection = client.db('assignment').collection('Security');
-  const usersCollection = client.db('assignment').collection('Users');
-  const recordsCollection = client.db('assignment').collection('Records');
+async function checkOut(client, data) {
+  const usersCollection = client.db('assigment').collection('Users');
+  const recordsCollection = client.db('assigment').collection('Records');
 
-  const securityUser = await securityCollection.findOne({ username: data.username });
-
-  if (!securityUser) {
-    return 'Security user not found';
-  }
-
-  const currentUser = await usersCollection.findOne({ username: mydata.username });
+  const currentUser = await usersCollection.findOne({ username: data.username });
 
   if (!currentUser) {
     return 'User not found';
   }
 
-  if (currentUser.username !== mydata.username) {
-    return 'Access denied. You are not authorized to check out this visitor.';
-  }
-
-  const checkOutRecord = await recordsCollection.findOne({ recordID: mydata.recordID });
-
-  if (!checkOutRecord) {
-    return `RecordID '${mydata.recordID}' not found`;
-  }
-
-  if (checkOutRecord.username !== mydata.username) {
-    return 'Invalid recordID for this user';
-  }
-
-  if (checkOutRecord.checkOutTime) {
-    return 'Visitor has already checked out';
+  if (!currentUser.currentCheckIn) {
+    return 'You have not checked in yet, please check in first!!!';
   }
 
   const checkOutTime = new Date();
 
   const updateResult = await recordsCollection.updateOne(
-    { recordID: mydata.recordID },
+    { recordID: currentUser.currentCheckIn },
     { $set: { checkOutTime: checkOutTime } }
   );
 
@@ -912,7 +872,7 @@ async function checkOut(client, data, mydata) {
   }
 
   const unsetResult = await usersCollection.updateOne(
-    { username: mydata.username },
+    { username: currentUser.username },
     { $unset: { currentCheckIn: 1 } }
   );
 
@@ -920,9 +880,8 @@ async function checkOut(client, data, mydata) {
     return 'Failed to check out. Please try again.';
   }
 
-  return `Visitor '${mydata.username}' has checked out at '${checkOutTime}' with recordID '${mydata.recordID}'`;
+  return `You have checked out at '${checkOutTime}' with recordID '${currentUser.currentCheckIn}'`;
 }
-
 
 
 
