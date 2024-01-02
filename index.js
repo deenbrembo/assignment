@@ -492,14 +492,14 @@ async function run() {
 
   
   
-  /**
+/**
  * @swagger
  * /checkIn:
  *   post:
  *     summary: Check-in for a visitor
  *     description: Perform check-in for a visitor with record ID and purpose
  *     tags:
- *       - Visitor
+ *       - Security
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -509,8 +509,8 @@ async function run() {
  *           schema:
  *             type: object
  *             properties:
- *              username:
- *                type: string
+ *               username:
+ *                 type: string
  *               recordID:
  *                 oneOf:
  *                   - type: string
@@ -540,16 +540,16 @@ async function run() {
   });
 
   
-  /**
+/**
  * @swagger
  * /checkOut:
  *   post:
- *   summary: Check-out for a visitor
- *     description: Perform check-out for a visitor using their username and record ID
+ *     summary: Perform check-out for a visitor
+ *     description: Update check-out time for a visitor
  *     tags:
- *       - Visitor
+ *       - Security
  *     security:
- *       - bearerAuth: [] # Security definition - Bearer Token
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -560,10 +560,12 @@ async function run() {
  *               username:
  *                 type: string
  *               recordID:
- *                 type: string
+ *                 oneOf:
+ *                   - type: string
+ *                   - type: integer
  *             required:
  *               - username
- *              - recordID
+ *               - recordID
  *     responses:
  *       '200':
  *         description: Check-out successful
