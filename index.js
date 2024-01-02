@@ -499,7 +499,7 @@ async function run() {
  *     summary: Check-in for a visitor
  *     description: Perform check-in for a visitor with record ID and purpose
  *     tags:
- *       - Visitor
+ *       - Security
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -509,6 +509,8 @@ async function run() {
  *           schema:
  *             type: object
  *             properties:
+ *              username:
+ *                type: string
  *               recordID:
  *                 oneOf:
  *                   - type: string
@@ -516,6 +518,7 @@ async function run() {
  *               purpose:
  *                 type: string
  *             required:
+ *               - username
  *               - recordID
  *               - purpose
  *     responses:
@@ -796,23 +799,19 @@ async function deleteUser(client, data) {
 
 
 
-//Function to check in
 async function checkIn(client, data, mydata) {
-  const usersCollection = client.db('assigment').collection('Users');
+  const securityCollection = client.db('assigment').collection('Security');
   const recordsCollection = client.db('assigment').collection('Records');
+  const usersCollection = client.db('assigment').collection('Users');
 
-  const currentUser = await usersCollection.findOne({ username: data.username });
-
-  if (!currentUser) {
-    return 'User not found';
+  if (data.role !== 'Security') {
+    return 'Access denied. Only security personnel can perform check-in.';
   }
 
-  if (currentUser.currentCheckIn) {
-    return 'Already checked in, please check out first!!!';
-  }
+  const visitor = await usersCollection.findOne({ username: mydata.username });
 
-  if (data.role !== 'Visitor') {
-    return 'Only visitors can access check-in.';
+  if (!visitor) {
+    return 'Visitor not found';
   }
 
   const existingRecord = await recordsCollection.findOne({ recordID: mydata.recordID });
@@ -822,25 +821,27 @@ async function checkIn(client, data, mydata) {
   }
 
   const currentCheckInTime = new Date();
-
   const recordData = {
-    username: data.username,
+    username: mydata.username,
     recordID: mydata.recordID,
     purpose: mydata.purpose,
     checkInTime: currentCheckInTime
   };
 
+  const securityUser = await securityCollection.findOne({ username: data.username });
+
+  if (!securityUser) {
+    return 'Security user not found';
+  }
+
   await recordsCollection.insertOne(recordData);
 
   await usersCollection.updateOne(
-    { username: data.username },
-    {
-      $set: { currentCheckIn: mydata.recordID },
-      $push: { records: mydata.recordID }
-    }
+    { username: mydata.username },
+    { $push: { records: mydata.recordID }, $set: { currentCheckIn: mydata.recordID } }
   );
 
-  return `You have checked in at '${currentCheckInTime}' with recordID '${mydata.recordID}'`;
+  return `Visitor '${mydata.username}' has checked in at '${currentCheckInTime}' with recordID '${mydata.recordID}'`;
 }
 
 
