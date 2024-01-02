@@ -865,15 +865,7 @@ async function checkOut(client, data) {
     return 'Access denied. Only security personnel can perform check-out.';
   }
 
-  const visitor = await usersCollection.findOne({ username: data.username });
-
-  if (!visitor) {
-    return 'User not found';
-  }
-
-  if (!visitor.currentCheckIn) {
-    return 'You have not checked in yet, please check in first!!!';
-  }
+  
 
   // Find the visitor
   const existingRecord = await recordsCollection.findOne({ recordID: data.recordID });
@@ -899,8 +891,8 @@ async function checkOut(client, data) {
   }
 
   const unsetResult = await usersCollection.updateOne(
-    { username: visitor.username },
-    { $unset: { currentCheckIn: 1 } }
+    { username: existingRecord.username },
+    { $unset: { currentCheckIn: '1' } }
   );
 
   if (unsetResult.modifiedCount === 0) {
