@@ -540,16 +540,17 @@ async function run() {
   });
 
   
+
 /**
  * @swagger
  * /checkOut:
  *   post:
  *     summary: Check-out for a visitor
- *     description: Perform check-out for a visitor using their username and record ID
+ *     description: Perform check-out for a visitor with record ID and username
  *     tags:
  *       - Security
  *     security:
- *       - bearerAuth: [] # Security definition - Bearer Token
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -572,11 +573,10 @@ async function run() {
  *             schema:
  *               type: string
  *       '400':
- *         description: Invalid request body
+ *         description: Invalid request body or visitor not found
  *       '401':
  *         description: Unauthorized - Token is missing or invalid
  */
-
   app.post('/checkOut', verifyToken, async (req, res) => {
     let data = req.user;
     res.send(await checkOut(client, data));
