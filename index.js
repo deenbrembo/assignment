@@ -547,7 +547,7 @@ async function run() {
  *   summary: Check-out for a visitor
  *     description: Perform check-out for a visitor using their username and record ID
  *     tags:
- *       - Visitor
+ *       - Security
  *     security:
  *       - bearerAuth: [] # Security definition - Bearer Token
  *     requestBody:
