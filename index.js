@@ -827,14 +827,10 @@ async function checkIn(client, data, mydata) {
     return 'Access denied. Only security personnel can perform check-in.';
   }
 
-  const visitor = await usersCollection.findOne({ username: data.username });
+  const visitor = await usersCollection.findOne({ username: mydata.username });
 
   if (!visitor) {
     return 'Visitor not found';
-  }
-
-  if (visitor.currentCheckIn) {
-    return 'Already checked in, please check out first!!!';
   }
 
   const existingRecord = await recordsCollection.findOne({ recordID: mydata.recordID });
@@ -845,18 +841,22 @@ async function checkIn(client, data, mydata) {
   
   const currentCheckInTime = new Date();
   const recordData = {
-    username: data.username,
+    username: mydata.username,
     recordID: mydata.recordID,
     purpose: mydata.purpose,
     checkInTime: currentCheckInTime
   };
 
-  
+  const securityUser = await securityCollection.findOne({ username: data.username });
+
+  if (!securityUser) {
+    return 'Security user not found';
+  }
 
   await recordsCollection.insertOne(recordData);
 
   await usersCollection.updateOne(
-    { username: data.username },
+    { username: mydata.username },
     { $push: { records: mydata.recordID }, $set: { currentCheckIn: mydata.recordID } }
   );
 
@@ -875,19 +875,15 @@ async function checkOut(client, data, mydata) {
     return 'Access denied. Only security personnel can perform check-out.';
   }
 
-  const visitor = await usersCollection.findOne({ username: data.username });
+  const visitor = await usersCollection.findOne({ username: mydata.username });
 
   if (!visitor) {
     return 'Visitor not found';
   }
 
-  if (!visitor.currentCheckIn) {
-    return 'You have not checked in yet, please check in first!!!';
-  }
-
   const record = await recordsCollection.findOne({
     recordID: mydata.recordID,
-    username: data.username,
+    username: mydata.username,
   });
 
   if (!record) {
@@ -895,7 +891,7 @@ async function checkOut(client, data, mydata) {
   }
 
   if (record.checkOutTime) {
-    return `Visitor '${data.username}' with record ID '${mydata.recordID}' has already checked out`;
+    return `Visitor '${mydata.username}' with record ID '${mydata.recordID}' has already checked out`;
   }
 
   const checkOutTime = new Date();
@@ -909,16 +905,7 @@ async function checkOut(client, data, mydata) {
     return 'Failed to update check-out time. Please try again.';
   }
 
-  const unsetResult = await usersCollection.updateOne(
-    { username: visitor.username },
-    { $unset: { currentCheckIn: 1 } }
-  );
-
-  if (unsetResult.modifiedCount === 0) {
-    return 'Failed to check out. Please try again.';
-  }
-
-  return `Visitor '${data.username}' with record ID '${mydata.recordID}' has checked out at '${checkOutTime}'`;
+  return `Visitor '${mydata.username}' with record ID '${mydata.recordID}' has checked out at '${checkOutTime}'`;
 }
 
 
