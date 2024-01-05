@@ -476,7 +476,7 @@ app.get('/retrievePass', async (req, res) => {
 
 /**
  * @swagger
- * /getHostContact/{VisitorPass}:
+ * /getHostContact:
  *   get:
  *     summary: Retrieve host contact from visitor pass (Security role)
  *     description: Get the contact number of the host from the visitor pass using passIdentifier
@@ -513,7 +513,7 @@ app.get('/retrievePass', async (req, res) => {
  *         description: Internal Server Error
  */
 
-app.get('/getHostContact/{VisitorPass}', verifyToken, async (req, res) => {
+app.get('/getHostContact', verifyToken, async (req, res) => {
   try {
     const data = req.user;
     const passIdentifier = req.params.passIdentifier;
