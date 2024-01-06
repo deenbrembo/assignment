@@ -661,8 +661,6 @@ app.delete('/Deletesecurity/:username', verifyToken, async (req, res) => {
  *                 type: string
  *               name:
  *                 type: string
- *               securityUsername:
- *                 type: string
  *               phoneNumber:
  *                 type: string
  *     responses:
@@ -938,7 +936,6 @@ async function registerHost(client, mydata) {
     username: mydata.username,
     password: await encryptPassword(mydata.password),
     name: mydata.name,
-    Security: mydata.securityUsername,
     phoneNumber: mydata.phoneNumber,
     role: "Test Host",
   });
