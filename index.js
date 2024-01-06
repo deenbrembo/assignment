@@ -600,6 +600,60 @@ app.delete('/Deletehosts/:username', verifyToken, async (req, res) => {
 });
 
 
+/**
+ * @swagger
+ * /Deletesecurity/{username}:
+ *   delete:
+ *     summary: Delete security by Admin
+ *     description: Delete a security user by an admin
+ *     tags:
+ *       - Admin
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: username
+ *         required: true
+ *         description: Username of the security user to delete
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: Security user deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Deletion success message
+ *       '401':
+ *         description: Unauthorized - Access denied
+ *       '404':
+ *         description: Security user not found
+ *       '500':
+ *         description: Internal Server Error
+ */
+app.delete('/Deletesecurity/:username', verifyToken, async (req, res) => {
+  try {
+    const data = req.user;
+    const { username } = req.params;
+
+    const deletionResult = await deleteSecurityByAdmin(client, data, username);
+
+    if (deletionResult === 'Security user deleted successfully') {
+      return res.status(200).json({ message: deletionResult });
+    } else {
+      return res.status(401).json({ error: deletionResult });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
 
 }
 
@@ -811,6 +865,28 @@ async function deleteHostBySecurity(client, data, usernameToDelete) {
   return 'Host deleted successfully';
 }
 
+// Function to delete security by Admin
+async function deleteSecurityByAdmin(client, data, usernameToDelete) {
+  if (data.role !== 'Admin') {
+    return 'Unauthorized access';
+  }
+
+  const securityCollection = client.db('assigment').collection('Security');
+
+  // Find the security user to be deleted
+  const securityToDelete = await securityCollection.findOne({ username: usernameToDelete });
+  if (!securityToDelete) {
+    return 'Security user not found';
+  }
+
+  // Delete the security user document
+  const deleteResult = await securityCollection.deleteOne({ username: usernameToDelete });
+  if (deleteResult.deletedCount === 0) {
+    return 'Failed to delete security user';
+  }
+
+  return 'Security user deleted successfully';
+}
 
 
 function generatePassIdentifier() {
