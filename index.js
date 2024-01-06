@@ -712,9 +712,9 @@ async function login(client, data) {
 
       switch (match.role) {
         case "Admin":
-          return "You are logged in as Admin\n1) Register Security\n2) Dump or Read All Hosts Data\n\nToken for " + match.name + ": " + token + "\n";
+          return "You are logged in as Admin\n1) Register Security\n2) Dump or Read All Hosts Data\n3) Delete Security Account\n\nToken for " + match.name + ": " + token + "\n";
         case "Security":
-          return "You are logged in as Security\n1) register Host\n2) Retrieve Hosts PhoneNumber from Visitor Pass\n\nToken for " + match.name + ": " + token + "\n";
+          return "You are logged in as Security\n1) register Host\n2) Retrieve Hosts PhoneNumber from Visitor Pass\n3) Delete Host Account\n\nToken for " + match.name + ": " + token + "\n";
         case "Host":
           return "You are logged in as a Host User\n1) Read All Visitor\n2) Issue the Pass for Visitor\n\nToken for " + match.name + ": " + token + "\n";
         default:
