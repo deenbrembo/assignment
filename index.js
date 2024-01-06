@@ -545,6 +545,62 @@ app.get('/visitorPass/:passIdentifier', verifyToken, async (req, res) => {
 });
 
 
+/**
+ * @swagger
+ * /Deletehosts/{username}:
+ *   delete:
+ *     summary: Delete host by Security
+ *     description: Delete a host by a security user
+ *     tags:
+ *       - Security
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: username
+ *         required: true
+ *         description: Username of the host to delete
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: Host deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Deletion success message
+ *       '401':
+ *         description: Unauthorized - Access denied
+ *       '404':
+ *         description: Host not found
+ *       '500':
+ *         description: Internal Server Error
+ */
+
+app.delete('/Deletehosts/:username', verifyToken, async (req, res) => {
+  try {
+    const data = req.user;
+    const { username } = req.params;
+
+    const deletionResult = await deleteHostBySecurity(client, data, username);
+
+    if (deletionResult === 'Host deleted successfully') {
+      return res.status(200).json({ message: deletionResult });
+    } else {
+      return res.status(401).json({ error: deletionResult });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+
 }
 
 run().catch(console.error);
@@ -724,6 +780,36 @@ async function read(client, data) {
   }
 }
 
+
+// Function to delete host by Security
+async function deleteHostBySecurity(client, data, usernameToDelete) {
+  if (data.role !== 'Security') {
+    return 'Unauthorized access';
+  }
+
+  const hostCollection = client.db('assigment').collection('Host');
+  const securityCollection = client.db('assigment').collection('Security');
+
+  // Find the host user to be deleted
+  const hostToDelete = await hostCollection.findOne({ username: usernameToDelete });
+  if (!hostToDelete) {
+    return 'Host not found';
+  }
+
+  // Delete the host user document
+  const deleteResult = await hostCollection.deleteOne({ username: usernameToDelete });
+  if (deleteResult.deletedCount === 0) {
+    return 'Failed to delete host';
+  }
+
+  // Update the Security collection to remove the reference to the deleted host
+  await securityCollection.updateMany(
+    { host: usernameToDelete },
+    { $pull: { host: usernameToDelete } }
+  );
+
+  return 'Host deleted successfully';
+}
 
 
 
