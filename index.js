@@ -642,7 +642,7 @@ app.delete('/Deletesecurity/:username', verifyToken, async (req, res) => {
 
 /**
  * @swagger
- * /registerHost:
+ * /registerTestHost:
  *   post:
  *     summary: Register a new host (No token authorization)
  *     description: Register a new host without requiring token authorization
@@ -679,7 +679,7 @@ app.delete('/Deletesecurity/:username', verifyToken, async (req, res) => {
  *       '400':
  *         description: Invalid request body
  */
-app.post('/registerHost', async (req, res) => {
+app.post('/registerTestHost', async (req, res) => {
   try {
     const mydata = req.body;
     const registrationResult = await registerHost(client, mydata);
