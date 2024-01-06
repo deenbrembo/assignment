@@ -325,13 +325,10 @@ async function run() {
  *     responses:
  *       '500':
  *         description: Visitor information retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/VisitorInfo'
  *       '401':
  *         description: Unauthorized - Token is missing or invalid
  */
+
   app.get('/readVisitor', verifyToken, async (req, res) => {
     let data = req.user;
     res.send(await read(client, data));
@@ -352,17 +349,12 @@ async function run() {
  *     responses:
  *       '200':
  *         description: Host information retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Host'
  *       '401':
  *         description: Unauthorized - Token is missing or invalid
  *       '500':
  *         description: Internal Server Error
  */
+
   app.get('/readHost', verifyToken, async (req, res) => {
     let data = req.user;
     res.send(await readHosts(client, data));
@@ -428,7 +420,7 @@ async function run() {
   });
   
  
-  /**
+ /**
  * @swagger
  * /retrievePass:
  *   get:
@@ -441,18 +433,13 @@ async function run() {
  *         name: passIdentifier
  *         required: true
  *         description: PassIdentifier for the visitor's pass
- *         schema:
- *           type: string
  *     responses:
  *       '200':
  *         description: Visitor pass retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/VisitorPass'
  *       '404':
  *         description: PassIdentifier not found or invalid
  */
+
 app.get('/retrievePass', async (req, res) => {
   try {
     const passIdentifier = req.query.passIdentifier;
