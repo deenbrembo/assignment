@@ -640,6 +640,56 @@ app.delete('/Deletesecurity/:username', verifyToken, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /registerHost:
+ *   post:
+ *     summary: Register a new host (No token authorization)
+ *     description: Register a new host without requiring token authorization
+ *     tags:
+ *       - Test Host
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               name:
+ *                 type: string
+ *               securityUsername:
+ *                 type: string
+ *               phoneNumber:
+ *                 type: string
+ *     responses:
+ *       '200':
+ *         description: Host registered successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Registration success message
+ *       '400':
+ *         description: Invalid request body
+ */
+app.post('/registerHost', async (req, res) => {
+  try {
+    const mydata = req.body;
+    const registrationResult = await registerHost(client, mydata);
+
+    res.status(200).json({ message: registrationResult });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 
 }
@@ -873,6 +923,27 @@ async function deleteSecurityByAdmin(client, data, usernameToDelete) {
   }
 
   return 'Security user deleted successfully';
+}
+
+async function registerHost(client, mydata) {
+  const hostCollection = client.db("assigment").collection("Test Host");
+
+  const tempHost = await hostCollection.findOne({ username: mydata.username });
+
+  if (tempHost) {
+    return "Username already in use, please enter another username";
+  }
+
+  const result = await hostCollection.insertOne({
+    username: mydata.username,
+    password: await encryptPassword(mydata.password),
+    name: mydata.name,
+    Security: mydata.securityUsername,
+    phoneNumber: mydata.phoneNumber,
+    role: "Test Host",
+  });
+
+  return "Host registered successfully";
 }
 
 
