@@ -182,27 +182,25 @@ async function run() {
     res.send(await login(client, data));
   });
 
- /**
+  /**
  * @swagger
- * /loginHost/{username}/{password}:
+ * /loginHost:
  *   post:
  *     summary: Authenticate Host
  *     description: Login for Host
  *     tags:
  *       - Host
- *     parameters:
- *       - in: path
- *         name: username
- *         required: true
- *         schema:
- *           type: string
- *         description: Host's username
- *       - in: path
- *         name: password
- *         required: true
- *         schema:
- *           type: string
- *         description: Host's password
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
  *     responses:
  *       '500':
  *         description: Visitor login successful
@@ -211,11 +209,10 @@ async function run() {
  *             schema:
  *               type: string
  *       '400':
- *         description: Invalid request parameters
+ *         description: Invalid request body
  *       '401':
  *         description: Unauthorized - Invalid credentials
  */
-
   app.post('/loginhost', async (req, res) => {
     let data = req.body;
     res.send(await login(client, data));
