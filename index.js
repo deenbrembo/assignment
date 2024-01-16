@@ -184,20 +184,20 @@ async function run() {
 
  /**
  * @swagger
- * /loginHost:
+ * /loginHost/{username}/{password}:
  *   post:
  *     summary: Authenticate Host
  *     description: Login for Host
  *     tags:
  *       - Host
  *     parameters:
- *       - in: query
+ *       - in: path
  *         name: username
  *         required: true
  *         schema:
  *           type: string
  *         description: Host's username
- *       - in: query
+ *       - in: path
  *         name: password
  *         required: true
  *         schema:
@@ -215,6 +215,7 @@ async function run() {
  *       '401':
  *         description: Unauthorized - Invalid credentials
  */
+
   app.post('/loginhost', async (req, res) => {
     let data = req.body;
     res.send(await login(client, data));
