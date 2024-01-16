@@ -917,7 +917,7 @@ async function readHosts(client, data) {
 //Function to read data
 async function read(client, data) {
   if (data.role === 'Host') {
-    const Host = await client.db('assigment').collection('Host').findOne({ username: data.username });
+    const Host = await client.db('assigment').collection('Host').findOne({ username: hostUsername });
     if (!Host) {
       return 'User not found';
     }
