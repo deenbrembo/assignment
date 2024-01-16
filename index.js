@@ -312,27 +312,40 @@ async function run() {
   });
 
   
-  /**
+ /**
  * @swagger
- * /readVisitor:
+ * /readVisitors:
  *   get:
- *     summary: Read visitor information
- *     description: Retrieve information for visitor
+ *     summary: Read visitor information for the host
+ *     description: Retrieve information for visitors created by the host
  *     tags:
  *       - Host
  *     security:
  *       - bearerAuth: []
  *     responses:
- *       '500':
+ *       '200':
  *         description: Visitor information retrieved successfully
  *       '401':
  *         description: Unauthorized - Token is missing or invalid
  */
+app.get('/readVisitors', verifyToken, async (req, res) => {
+  try {
+    const data = req.user;
 
-  app.get('/readVisitor', verifyToken, async (req, res) => {
-    let data = req.user;
-    res.send(await read(client, data));
-  });
+    // Check if the user has the 'Host' role
+    if (data.role !== 'Host') {
+      return res.status(401).json({ error: 'Unauthorized access' });
+    }
+
+    // Query the database to retrieve visitors created by the host
+    const visitors = await client.db('assigment').collection('Records').find({ hostUsername: data.username }).toArray();
+
+    return res.status(200).json(visitors);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 
 
@@ -450,6 +463,7 @@ app.get('/retrievePass', async (req, res) => {
     if (!pass) {
       return res.status(404).send('PassIdentifier not found or invalid');
     }
+    
 
     // Return the pass information if found
     return res.status(200).json(pass);
@@ -648,7 +662,7 @@ app.delete('/Deletesecurity/:username', verifyToken, async (req, res) => {
  *     summary: Register a new host (No token authorization)
  *     description: Register a new host without requiring token authorization
  *     tags:
- *       - Test Host
+ *       - Host
  *     requestBody:
  *       required: true
  *       content:
