@@ -522,6 +522,7 @@ app.get('/visitorPass/:passIdentifier', verifyToken, async (req, res) => {
     const hostContact = {
       name: visitorPass.hostUsername,
       phoneNumber: visitorPass.hostPhoneNumber,
+      date: visitorPass.issueDate,
     };
 
     return res.status(200).json(hostContact);
@@ -686,6 +687,67 @@ app.post('/registerTestHost', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+/**
+ * @swagger
+ * /deleteVisitor/{passIdentifier}:
+ *   delete:
+ *     summary: Delete visitor by Host
+ *     description: Delete a visitor by a host user
+ *     tags:
+ *       - Host
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: passIdentifier
+ *         required: true
+ *         description: PassIdentifier of the visitor's pass to delete
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: Visitor deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Deletion success message
+ *       '401':
+ *         description: Unauthorized - Access denied
+ *       '404':
+ *         description: Visitor not found
+ *       '500':
+ *         description: Internal Server Error
+ */
+app.delete('/deleteVisitor/:passIdentifier', verifyToken, async (req, res) => {
+  try {
+    const data = req.user;
+    const passIdentifier = req.params.passIdentifier;
+
+    // Check if the user has the 'Host' role
+    if (data.role !== 'Host') {
+      return res.status(401).json({ error: 'Unauthorized access' });
+    }
+
+    // Call the asynchronous function for deleting a visitor
+    const deletionResult = await deleteVisitorByHost(passIdentifier);
+
+    if (deletionResult.success) {
+      return res.status(200).json({ message: 'Visitor deleted successfully' });
+    } else if (deletionResult.notFound) {
+      return res.status(404).json({ error: 'Visitor not found' });
+    } else {
+      return res.status(500).json({ error: 'Failed to delete visitor' });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
@@ -861,7 +923,7 @@ async function read(client, data) {
     }
 
     // Fetch all records data only when the user is a Host
-    const Records = await client.db('assigment').collection('Records').find({}).toArray();
+    const Records = await client.db('assigment').collection('Records').find({ hostUsername }).toArray();
 
     return Records;//only return records
   } else {
@@ -924,7 +986,7 @@ async function deleteSecurityByAdmin(client, data, usernameToDelete) {
 }
 
 async function registerHost(client, mydata) {
-  const hostCollection = client.db("assigment").collection("Test Host");
+  const hostCollection = client.db("assigment").collection("Host");
 
   const tempHost = await hostCollection.findOne({ username: mydata.username });
 
@@ -941,6 +1003,27 @@ async function registerHost(client, mydata) {
   });
 
   return "Host registered successfully";
+}
+
+
+// Asynchronous function to delete a visitor by Host
+async function deleteVisitorByHost(passIdentifier) {
+  try {
+    // Query the database using passIdentifier to find the visitor's pass
+    const visitorPass = await client.db('assigment').collection('Records').findOne({ passIdentifier });
+
+    if (!visitorPass) {
+      return { notFound: true };
+    }
+
+    // Delete the visitor's pass from the database
+    const deleteResult = await client.db('assigment').collection('Records').deleteOne({ passIdentifier });
+
+    return { success: deleteResult.deletedCount > 0 };
+  } catch (error) {
+    console.error(error);
+    return { success: false };
+  }
 }
 
 
