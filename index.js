@@ -999,7 +999,7 @@ async function registerHost(client, mydata) {
     password: await encryptPassword(mydata.password),
     name: mydata.name,
     phoneNumber: mydata.phoneNumber,
-    role: "Test Host",
+    role: "Host",
   });
 
   return "Host registered successfully";
