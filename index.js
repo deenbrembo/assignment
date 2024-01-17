@@ -817,7 +817,7 @@ async function registerAdmin(client, data) {
     return 'Username already registered';
   } else {
     const result = await client.db("assigment").collection("Admin").insertOne(data);
-    return "Admin" + result.username + " registered successfully";
+    return "Admin registered successfully";
   }
 }
 
@@ -953,7 +953,7 @@ async function register(client, data, mydata) {
       host: [],
     });
 
-    return "Security " + result.username + " registered successfully";
+    return "Security registered successfully";
   }
 
   if (data.role === "Security") {
@@ -971,7 +971,7 @@ async function register(client, data, mydata) {
       { $push: { host: mydata.username } }
     );
 
-    return "Host" + result.username + "registered successfully";
+    return "Host registered successfully";
   }
 }
 
@@ -1065,7 +1065,7 @@ async function registerHost(client, mydata) {
     role: "Host",
   });
 
-  return "Test Host" + result.username + "registered successfully";
+  return "Test Host registered successfully";
 }
 
 
