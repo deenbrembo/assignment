@@ -9,8 +9,6 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
 const rateLimit = require('express-rate-limit');
 
-
-
 // Configure rate limiting for login attempts
 const loginLimiterAdmin = rateLimit({
   windowMs: 15 * 1000, // 15 second
@@ -31,7 +29,6 @@ const loginLimiterHost = rateLimit({
   max: 5, // Max 5 attempts within the 15-minute window
   message: "Too many login attempts, please try again later in 15 seconds.",
 });
-
 
 const options = {
     definition: {
@@ -166,28 +163,10 @@ async function run() {
  *       '401':
  *         description: Unauthorized - Invalid credentials
  */
-  app.post('/loginAdmin', loginLimiterAdmin, async (req, res) => {
-    try {
-      let data = req.body;
-  
-      // Use the rate-limiting middleware to check for too many attempts
-      loginLimiterAdmin.consume(req.ip, async (err, rateLimitResponse) => {
-        if (err || rateLimitResponse.remainingPoints < 0) {
-          const retryAfter = Math.ceil(rateLimitResponse.msBeforeNext / 1000); // Convert milliseconds to seconds
-          return res.status(429).json({ error: `Too many login attempts, please try again later in ${retryAfter} seconds.`, retryAfter });
-        }
-  
-        // Proceed with the login logic if not rate-limited
-        const loginResult = await loginAdmin(client, data);
-        return res.send(loginResult);
-      });
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ error: 'Internal Server Error' });
-    }
-  });  
-  
-  
+  app.post('/loginAdmin',loginLimiterAdmin, async (req, res) => {
+    let data = req.body;
+    res.send(await loginAdmin(client, data));
+  });
 
   /**
  * @swagger
