@@ -942,22 +942,7 @@ async function readHosts(client, data) {
   }
 }
 
-//Function to read data
-async function read(client, data) {
-  if (data.role === 'Host') {
-    const Host = await client.db('assigment').collection('Host').findOne({ username: hostUsername });
-    if (!Host) {
-      return 'User not found';
-    }
 
-    // Fetch all records data only when the user is a Host
-    const Records = await client.db('assigment').collection('Records').find({ hostUsername }).toArray();
-
-    return Records;//only return records
-  } else {
-    return 'Unauthorized access';
-  }
-}
 
 
 // Function to delete host by Security
@@ -1020,6 +1005,13 @@ async function registerHost(client, mydata) {
 
   if (tempHost) {
     return "Username already in use, please enter another username";
+  }
+
+  const passwordCheck = isStrongPassword(mydata.password);
+
+  // Check if the password meets the password policy
+  if (passwordCheck !== true) {
+    return passwordCheck; // Return the array of error messages
   }
 
   const result = await hostCollection.insertOne({
