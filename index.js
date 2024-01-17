@@ -171,7 +171,7 @@ async function run() {
       const loginResult = await loginAdmin(client, data);
   
       // Handle rate-limiting responses
-      if (loginResult === 'Too many login attempts, please try again in 15 second later.') {
+      if (loginResult === 'Too many login attempts, please try again later in 15 seconds.') {
         const retryAfter = res.getHeader('Retry-After');
         return res.status(429).json({ error: loginResult, retryAfter });
       }
@@ -182,6 +182,7 @@ async function run() {
       return res.status(500).json({ error: 'Internal Server Error' });
     }
   });
+  
   
 
   /**
@@ -853,8 +854,6 @@ async function loginAdmin(client, data) {
       const token = generateToken(match);
       return "You are logged in as Admin\n1) Register Security\n2) Dump or Read All Hosts Data\n3) Delete Security Account\n\nToken for " + match.name + ": " + token + "\n";
     } else {
-      // Handle wrong password and increment the login attempts
-      loginLimiterAdmin.consume(req.ip); // Increment login attempts
       return "Wrong password";
     }
   } else {
