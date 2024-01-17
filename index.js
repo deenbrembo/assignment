@@ -11,9 +11,9 @@ const rateLimit = require('express-rate-limit');
 
 // Configure rate limiting for login attempts
 const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 1000, // 15 second
   max: 5, // Max 5 attempts within the 15-minute window
-  message: "Too many login attempts, please try again later in 15 minutes.",
+  message: "Too many login attempts, please try again later in 15 seconds.",
 });
 
 const options = {
@@ -151,7 +151,7 @@ async function run() {
  */
   app.post('/loginAdmin',loginLimiter, async (req, res) => {
     let data = req.body;
-    res.send(await login(client, data));
+    res.send(await loginAdmin(client, data));
   });
 
   /**
@@ -187,7 +187,7 @@ async function run() {
  */
   app.post('/loginSecurity',loginLimiter, async (req, res) => {
     let data = req.body;
-    res.send(await login(client, data));
+    res.send(await loginSecurity(client, data));
   });
 
   /**
@@ -223,7 +223,7 @@ async function run() {
  */
   app.post('/loginhost', loginLimiter, async (req, res) => {
     let data = req.body;
-    res.send(await login(client, data));
+    res.send(await loginHost(client, data));
   });
 
   /**
@@ -808,52 +808,73 @@ async function registerAdmin(client, data) {
 }
 
 
-//Function to login
-async function login(client, data) {
+// Function to login as Admin
+async function loginAdmin(client, data) {
   const adminCollection = client.db("assigment").collection("Admin");
-  const securityCollection = client.db("assigment").collection("Security");
-  const hostCollection = client.db("assigment").collection("Host");
-
   // Find the admin user
-  let match = await adminCollection.findOne({ username: data.username });
-
-  if (!match) {
-    // Find the security user
-    match = await securityCollection.findOne({ username: data.username });
-  }
-
-  if (!match) {
-    // Find the host user
-    match = await hostCollection.findOne({ username: data.username });
-  }
+  const match = await adminCollection.findOne({ username: data.username });
 
   if (match) {
     // Compare the provided password with the stored password
     const isPasswordMatch = await decryptPassword(data.password, match.password);
 
+    if (isPasswordMatch) {
+      console.clear(); // Clear the console
+      const token = generateToken(match);
+      return "You are logged in as Admin\n1) Register Security\n2) Dump or Read All Hosts Data\n3) Delete Security Account\n\nToken for " + match.name + ": " + token + "\n";
+    } else {
+      return "Wrong password";
+    }
+  } else {
+    return "Admin not found";
+  }
+}
+
+// Function to login as Security
+async function loginSecurity(client, data) {
+  const securityCollection = client.db("assigment").collection("Security");
+  // Find the security user
+  const match = await securityCollection.findOne({ username: data.username });
+
+  if (match) {
+    // Compare the provided password with the stored password
+    const isPasswordMatch = await decryptPassword(data.password, match.password);
 
     if (isPasswordMatch) {
       console.clear(); // Clear the console
       const token = generateToken(match);
-
-      switch (match.role) {
-        case "Admin":
-          return "You are logged in as Admin\n1) Register Security\n2) Dump or Read All Hosts Data\n3) Delete Security Account\n\nToken for " + match.name + ": " + token + "\n";
-        case "Security":
-          return "You are logged in as Security\n1) register Host\n2) Retrieve Hosts PhoneNumber from Visitor Pass\n3) Delete Host Account\n\nToken for " + match.name + ": " + token + "\n";
-        case "Host":
-          return "You are logged in as a Host User\n1) Read All Visitor\n2) Issue the Pass for Visitor\n3) Delete create Visitor\n\nToken for " + match.name + ": " + token + "\n";
-        default:
-          return "Role not defined";
-      }
-    }
-     else {
+      return "You are logged in as Security\n1) register Host\n2) Retrieve Hosts PhoneNumber from Visitor Pass\n3) Delete Host Account\n\nToken for " + match.name + ": " + token + "\n";
+    } else {
       return "Wrong password";
     }
   } else {
-    return "User not found";
+    return "Security user not found";
   }
 }
+
+// Function to login as Host
+async function loginHost(client, data) {
+  const hostCollection = client.db("assigment").collection("Host");
+  // Find the host user
+  const match = await hostCollection.findOne({ username: data.username });
+
+  if (match) {
+    // Compare the provided password with the stored password
+    const isPasswordMatch = await decryptPassword(data.password, match.password);
+
+    if (isPasswordMatch) {
+      console.clear(); // Clear the console
+      const token = generateToken(match);
+      return "You are logged in as a Host User\n1) Read All Visitor\n2) Issue the Pass for Visitor\n3) Delete create Visitor\n\nToken for " + match.name + ": " + token + "\n";
+    } else {
+      return "Wrong password";
+    }
+  } else {
+    return "Host user not found";
+  }
+}
+
+
 
 // Function to issue a visitor pass
 async function issueVisitorPass(userData, newName, newPhoneNumber, dbClient) {
