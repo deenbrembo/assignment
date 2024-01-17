@@ -9,6 +9,8 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
 const rateLimit = require('express-rate-limit');
 
+
+
 // Configure rate limiting for login attempts
 const loginLimiterAdmin = rateLimit({
   windowMs: 15 * 1000, // 15 second
@@ -163,10 +165,24 @@ async function run() {
  *       '401':
  *         description: Unauthorized - Invalid credentials
  */
-  app.post('/loginAdmin',loginLimiterAdmin, async (req, res) => {
-    let data = req.body;
-    res.send(await loginAdmin(client, data));
+  app.post('/loginAdmin', loginLimiterAdmin, async (req, res) => {
+    try {
+      let data = req.body;
+      const loginResult = await loginAdmin(client, data);
+  
+      // Handle rate-limiting responses
+      if (loginResult === 'Too many login attempts, please try again in 15 second later.') {
+        const retryAfter = res.getHeader('Retry-After');
+        return res.status(429).json({ error: loginResult, retryAfter });
+      }
+  
+      return res.send(loginResult);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
   });
+  
 
   /**
  * @swagger
@@ -837,6 +853,8 @@ async function loginAdmin(client, data) {
       const token = generateToken(match);
       return "You are logged in as Admin\n1) Register Security\n2) Dump or Read All Hosts Data\n3) Delete Security Account\n\nToken for " + match.name + ": " + token + "\n";
     } else {
+      // Handle wrong password and increment the login attempts
+      loginLimiterAdmin.consume(req.ip); // Increment login attempts
       return "Wrong password";
     }
   } else {
