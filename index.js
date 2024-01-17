@@ -32,6 +32,7 @@ const loginLimiterHost = rateLimit({
   message: "Too many login attempts, please try again later in 15 seconds.",
 });
 
+
 const options = {
     definition: {
         openapi: '3.0.0',
@@ -168,20 +169,23 @@ async function run() {
   app.post('/loginAdmin', loginLimiterAdmin, async (req, res) => {
     try {
       let data = req.body;
-      const loginResult = await loginAdmin(client, data);
   
-      // Handle rate-limiting responses
-      if (loginResult === 'Too many login attempts, please try again later in 15 seconds.') {
-        const retryAfter = res.getHeader('Retry-After');
-        return res.status(429).json({ error: loginResult, retryAfter });
-      }
+      // Use the rate-limiting middleware to check for too many attempts
+      loginLimiterAdmin.consume(req.ip, async (err, rateLimitResponse) => {
+        if (err || rateLimitResponse.remainingPoints < 0) {
+          const retryAfter = Math.ceil(rateLimitResponse.msBeforeNext / 1000); // Convert milliseconds to seconds
+          return res.status(429).json({ error: `Too many login attempts, please try again later in ${retryAfter} seconds.`, retryAfter });
+        }
   
-      return res.send(loginResult);
+        // Proceed with the login logic if not rate-limited
+        const loginResult = await loginAdmin(client, data);
+        return res.send(loginResult);
+      });
     } catch (error) {
       console.error(error);
       return res.status(500).json({ error: 'Internal Server Error' });
     }
-  });
+  });  
   
   
 
