@@ -7,6 +7,14 @@ const app = express();
 const port = process.env.PORT || 3000;
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
+const rateLimit = require('express-rate-limit');
+
+// Configure rate limiting for login attempts
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Max 5 attempts within the 15-minute window
+  message: "Too many login attempts, please try again later in 15 minutes.",
+});
 
 const options = {
     definition: {
@@ -141,7 +149,7 @@ async function run() {
  *       '401':
  *         description: Unauthorized - Invalid credentials
  */
-  app.post('/loginAdmin', async (req, res) => {
+  app.post('/loginAdmin',loginLimiter, async (req, res) => {
     let data = req.body;
     res.send(await login(client, data));
   });
@@ -177,7 +185,7 @@ async function run() {
  *       '401':
  *         description: Unauthorized - Invalid credentials
  */
-  app.post('/loginSecurity', async (req, res) => {
+  app.post('/loginSecurity',loginLimiter, async (req, res) => {
     let data = req.body;
     res.send(await login(client, data));
   });
@@ -213,7 +221,7 @@ async function run() {
  *       '401':
  *         description: Unauthorized - Invalid credentials
  */
-  app.post('/loginhost', async (req, res) => {
+  app.post('/loginhost', loginLimiter, async (req, res) => {
     let data = req.body;
     res.send(await login(client, data));
   });
