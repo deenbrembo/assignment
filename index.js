@@ -86,7 +86,7 @@ async function run() {
  * /registerAdmin:
  *   post:
  *     summary: Register a new admin
- *     description: Register a new admin user with required details
+ *     description: Register a new admin user with required details and password user policy
  *     tags:
  *       - Admin
  *     requestBody:
@@ -245,7 +245,7 @@ async function run() {
  * /registerSecurity:
  *   post:
  *     summary: Register a new security personnel
- *     description: Register a new security personnel with required details
+ *     description: Register a new security personnel with required details and password user policy
  *     tags:
  *       - Admin
  *     security:
@@ -292,7 +292,7 @@ async function run() {
  * /registerHost:
  *   post:
  *     summary: Register a new host
- *     description: Register a new host with required details
+ *     description: Register a new host with required details and password user policy
  *     tags:
  *       - Security
  *     security:
@@ -682,9 +682,9 @@ app.delete('/Deletesecurity/:username', verifyToken, async (req, res) => {
  * /registerTestHost:
  *   post:
  *     summary: Register a new host (No token authorization)
- *     description: Register a new host without requiring token authorization
+ *     description: Register a new host without requiring token authorization and password user policy
  *     tags:
- *       - Host
+ *       - Security
  *     requestBody:
  *       required: true
  *       content:
@@ -817,7 +817,7 @@ async function registerAdmin(client, data) {
     return 'Username already registered';
   } else {
     const result = await client.db("assigment").collection("Admin").insertOne(data);
-    return 'Admin registered';
+    return "Admin" + result.username + " registered successfully";
   }
 }
 
@@ -953,7 +953,7 @@ async function register(client, data, mydata) {
       host: [],
     });
 
-    return "Security registered successfully";
+    return "Security " + result.username + " registered successfully";
   }
 
   if (data.role === "Security") {
@@ -971,7 +971,7 @@ async function register(client, data, mydata) {
       { $push: { host: mydata.username } }
     );
 
-    return "Host registered successfully";
+    return "Host" + result.username + "registered successfully";
   }
 }
 
@@ -1065,7 +1065,7 @@ async function registerHost(client, mydata) {
     role: "Host",
   });
 
-  return "Host registered successfully";
+  return "Test Host" + result.username + "registered successfully";
 }
 
 
