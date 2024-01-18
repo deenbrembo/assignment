@@ -487,6 +487,7 @@ app.get('/retrievePass', async (req, res) => {
 
     const passInfo = {
       issueby: pass.hostUsername,
+      passID: pass.passIdentifier,
       issueDate: pass.issueDate,
     };
     
