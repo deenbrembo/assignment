@@ -65,7 +65,6 @@ const client = new MongoClient(uri, {
   }
 });
 
-
 async function run() {
   await client.connect();
   await client.db("admin").command({ ping: 1 });
@@ -787,7 +786,6 @@ app.delete('/deleteVisitor/:passIdentifier', verifyToken, async (req, res) => {
   }
 });
 
-
 }
 
 run().catch(console.error);
@@ -799,7 +797,6 @@ function generateToken(userProfile){
   'dinpassword',           //password
   { expiresIn: '2h' });  //expires after 2 hour
 }
-
 
 //Function to register admin
 async function registerAdmin(client, data) {
@@ -820,7 +817,6 @@ async function registerAdmin(client, data) {
     return "Admin registered successfully";
   }
 }
-
 
 // Function to login as Admin
 async function loginAdmin(client, data) {
@@ -888,8 +884,6 @@ async function loginHost(client, data) {
   }
 }
 
-
-
 // Function to issue a visitor pass
 async function issueVisitorPass(userData, newName, newPhoneNumber, dbClient) {
   const passIdentifier = generatePassIdentifier(); // Implement this function
@@ -922,7 +916,6 @@ async function decryptPassword(password, compare) {
   const match = await bcrypt.compare(password, compare)
   return match
 }
-
 
 //Function to register security and visitor
 async function register(client, data, mydata) {
@@ -984,9 +977,6 @@ async function readHosts(client, data) {
     return 'Unauthorized access';
   }
 }
-
-
-
 
 // Function to delete host by Security
 async function deleteHostBySecurity(client, data, usernameToDelete) {
@@ -1068,7 +1058,6 @@ async function registerHost(client, mydata) {
   return "Test Host registered successfully";
 }
 
-
 // Asynchronous function to delete a visitor by Host
 async function deleteVisitorByHost(passIdentifier) {
   try {
@@ -1115,7 +1104,6 @@ function isStrongPassword(password) {
 
   return errors.length === 0 ? true : errors;
 }
-
 
 function generatePassIdentifier() {
   return uuidv4(); // Generates a UUID (e.g., '1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed')
