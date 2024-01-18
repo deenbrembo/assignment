@@ -498,7 +498,7 @@ app.get('/retrievePass', async (req, res) => {
 
 /**
  * @swagger
- * /visitorPass/{passIdentifier}:
+ * /getHostContact/{passIdentifier}:
  *   get:
  *     summary: Retrieve host contact from visitor pass (Security role)
  *     description: Get the contact number of the host from the visitor pass using passIdentifier
@@ -536,7 +536,7 @@ app.get('/retrievePass', async (req, res) => {
  */
 
 
-app.get('/visitorPass/:passIdentifier', verifyToken, async (req, res) => {
+app.get('/getHostContact/:passIdentifier', verifyToken, async (req, res) => {
   try {
     const data = req.user;
     const passIdentifier = req.params.passIdentifier;
