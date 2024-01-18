@@ -561,8 +561,8 @@ app.get('/getHostContact/:passIdentifier', verifyToken, async (req, res) => {
 
     // Return only the host's contact information to the public
     const hostContact = {
-      name: visitorPass.hostUsername,
-      phoneNumber: visitorPass.hostPhoneNumber,
+      HostName: visitorPass.hostUsername,
+      HostphoneNumber: visitorPass.hostPhoneNumber,
       date: visitorPass.issueDate,
     };
 
