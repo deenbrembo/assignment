@@ -484,10 +484,15 @@ app.get('/retrievePass', async (req, res) => {
     if (!pass) {
       return res.status(404).send('PassIdentifier not found or invalid');
     }
+
+    const passInfo = {
+      issueby: pass.hostUsername,
+      issueDate: pass.issueDate,
+    };
     
 
     // Return the pass information if found
-    return res.status(200).json(pass);
+    return res.status(200).json(passInfo);
   } catch (error) {
     console.error(error);
     return res.status(500).send('Internal Server Error');
